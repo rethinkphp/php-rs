@@ -6,11 +6,12 @@ extern crate php;
 
 use libc::*;
 use php::*;
+use zend::*;
 use php::info::*;
 
 #[link_args = "-Wl,-undefined,dynamic_lookup"]
 extern {
-
+    pub fn php_printf(format: *const c_char , ...) -> size_t;
 }
 
 #[no_mangle]
@@ -30,6 +31,12 @@ pub extern fn php_module_info() {
     print_table_end();
 }
 
+#[no_mangle]
+pub extern fn helloworld(data: &ExecuteData, retval: &Value) {
+    unsafe {
+        php_printf(c_str!("Hello world, Rust!"))
+    };
+}
 
 #[no_mangle]
 pub extern fn get_module() -> *mut zend::Module {
@@ -40,6 +47,19 @@ pub extern fn get_module() -> *mut zend::Module {
     ));
 
     entry.set_info_func(php_module_info);
+
+    let args = Box::new([
+        ArgInfo::new(1 as *const c_char, 0, 0, 0),
+        ArgInfo::new(c_str!("name"), 0, 0, 0),
+    ]);
+
+    let funcs = Box::new([
+        Function::new(c_str!("helloworld"), helloworld),
+        Function::new_with_args(c_str!("helloworld2"), helloworld, args),
+        Function::end(),
+    ]);
+
+    entry.set_functions(funcs);
 
     Box::into_raw(entry)
 }
