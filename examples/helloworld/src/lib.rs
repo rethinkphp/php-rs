@@ -13,12 +13,6 @@ extern {
 
 }
 
-macro_rules! c_str {
-    ($s:expr) => { {
-        concat!($s, "\0").as_ptr() as *const c_char
-    } }
-}
-
 #[no_mangle]
 pub extern fn php_module_startup(type_: c_int, module_number: c_int) -> c_int {
    0 

@@ -10,11 +10,6 @@ type GlobalsDtorFunc = extern fn (global: *const c_void) -> c_void;
 type PostDeactivateFunc = extern fn () -> c_int;
 
 
-macro_rules! c_str {
-    ($s:expr) => { {
-        concat!($s, "\0").as_ptr() as *const c_char
-    } }
-}
 
 pub struct ModuleDep {}
 pub struct Function {}
