@@ -1,0 +1,12 @@
+[package]
+name = "helloworld"
+version = "0.1.0"
+authors = ["Jin Hu <bixuehujin@gmail.com>"]
+
+[dependencies]
+libc = "0.2.0"
+php-rs = { path = "../.." }
+
+[lib]
+name = "helloworld"
+crate-type = ["dylib"]
