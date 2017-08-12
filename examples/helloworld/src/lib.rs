@@ -32,9 +32,7 @@ pub extern fn php_module_shutdown(type_: c_int, module_number: c_int) -> c_int {
 #[no_mangle]
 pub extern fn php_module_info() {
     print_table_start();
-    unsafe {
-        php_info_print_table_row(2, c_str!("A demo PHP extension written in Rust"), c_str!("enabled"));
-    }
+    print_table_row(&["A demo PHP extension written in Rust", "enabled"]);
     print_table_end();
 }
 
