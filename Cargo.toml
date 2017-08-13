@@ -2,6 +2,9 @@
 name = "php-rs"
 version = "0.1.0"
 authors = ["Jin Hu <bixuehujin@gmail.com>"]
+keywords = ["php", "php-extension"]
+description = "A library to build PHP extensions in Rust."
+license = "MIT"
 
 [dependencies]
 libc = "0.2.0"
