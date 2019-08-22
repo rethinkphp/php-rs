@@ -112,10 +112,10 @@ pub struct Module {
 }
 
 impl Module {
-    pub fn new(name: *const c_char, version: *const c_char) -> Module {
+    pub fn new(name: *const c_char, version: *const c_char, zend_api: c_uint, build_id: *const c_char) -> Module {
         Module {
             size: mem::size_of::<Module>() as u16,
-            zend_api: 20151012,
+            zend_api: zend_api,
             zend_debug: 0,
             zts: 0,
             ini_entry: std::ptr::null(),
@@ -137,7 +137,7 @@ impl Module {
             type_: 0,
             handle: std::ptr::null(),
             module_number: 0,
-            build_id: c_str!("API20151012,NTS"),
+            build_id: build_id,
         }
     }
 

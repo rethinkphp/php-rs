@@ -6,6 +6,7 @@ keywords = ["php", "php-extension"]
 description = "A library to build PHP extensions in Rust."
 license = "MIT"
 repository = "https://github.com/rethinkphp/php-rs"
+edition = "2018"
 
 [dependencies]
 libc = "0.2.0"
