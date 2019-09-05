@@ -30,7 +30,7 @@ pub extern fn php_module_info() {
 }
 
 #[no_mangle]
-pub extern fn helloworld(data: &ExecuteData, retval: &Value) {
+pub extern fn helloworld(data: &ExecuteData, retval: &mut Zval) {
     unsafe {
         php_printf(c_str!("Hello world, Rust!"))
     };
