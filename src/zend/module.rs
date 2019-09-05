@@ -1,6 +1,8 @@
+#![feature(c_variadic)]
 use std;
 use std::mem;
 use libc::*;
+use std::ffi::CString;
 
 type StartupFunc = extern fn (type_: c_int, module_number: c_int) -> c_int;
 type ShutdownFunc = extern fn (type_: c_int, module_number: c_int) -> c_int;
@@ -8,10 +10,9 @@ type InfoFunc = extern fn () ;
 type GlobalsCtorFunc = extern fn (global: *const c_void) -> c_void;
 type GlobalsDtorFunc = extern fn (global: *const c_void) -> c_void;
 type PostDeactivateFunc = extern fn () -> c_int;
-type HandlerFunc = extern fn (execute_data: &ExecuteData, retval: &Value);
+type HandlerFunc = extern fn (execute_data: &ExecuteData, retval: &mut Zval);
 
 pub struct ExecuteData {}
-pub struct Value {}
 pub struct ModuleDep {}
 
 #[repr(C)]
@@ -112,10 +113,10 @@ pub struct Module {
 }
 
 impl Module {
-    pub fn new(name: *const c_char, version: *const c_char) -> Module {
+    pub fn new(name: *const c_char, version: *const c_char, zend_api: c_uint, build_id: *const c_char) -> Module {
         Module {
             size: mem::size_of::<Module>() as u16,
-            zend_api: 20151012,
+            zend_api: zend_api,
             zend_debug: 0,
             zts: 0,
             ini_entry: std::ptr::null(),
@@ -137,7 +138,7 @@ impl Module {
             type_: 0,
             handle: std::ptr::null(),
             module_number: 0,
-            build_id: c_str!("API20151012,NTS"),
+            build_id: build_id,
         }
     }
 
@@ -159,3 +160,85 @@ impl Module {
 }
 
 unsafe impl Sync for Module {}
+
+// Zend Types and Zval
+//https://github.com/php/php-src/blob/d0754b86b1cb4774c4af64498641ddaaab745418/Zend/zend_types.h#L176-L233
+#[repr(C)]
+pub union ZendValue {
+    pub long_value: c_long,
+    pub double_value: c_double,
+    pub string: *mut ZendString,
+}
+
+#[repr(C)]
+pub union U1 {
+    pub type_info: libc::uint32_t,
+}
+
+#[repr(C)]
+pub union U2 {
+    pub next: libc::uint32_t,
+}
+
+#[repr(C)]
+pub struct ZendRefCounted {
+    pub ref_count: libc::uint32_t,
+    pub type_info: libc::uint32_t,
+}
+
+#[repr(C)]
+pub struct ZendString {
+    pub gc: ZendRefCounted,
+    pub hash: libc::uint32_t,
+    pub len: libc::size_t,
+    pub value: *mut libc::c_char,
+}
+
+#[repr(C)]
+pub struct Zval {
+    pub value: ZendValue,
+    pub u1: U1,
+    pub u2: U2,
+}
+
+extern "C" {
+    fn zend_strpprintf(max_len: libc::size_t, format: *const c_char, ...) -> *mut ZendString;
+}
+
+extern "C" {
+	pub fn zend_parse_parameters(num_args: i32, format: *const c_char, ...) -> i32;
+}
+
+fn zend_string(max_len: libc::size_t, format: &str) -> *mut ZendString {
+    let c_format = CString::new(format).unwrap();
+    unsafe {
+        let strg = zend_strpprintf(max_len, c_format.as_ptr());
+        strg
+    }
+}
+
+impl From<&str> for ZendValue {
+    fn from(rust_str: &str) -> Self {
+        ZendValue {
+            string: zend_string(rust_str.len(), rust_str),
+        }
+    }
+}
+
+pub trait IntoZval {
+    fn into_zval(self, zval: &mut Zval);
+}
+
+impl IntoZval for &str {
+    fn into_zval(self, zval: &mut Zval) {
+        (*zval).u1.type_info = 6;
+        (*zval).value = ZendValue::from(self);
+    }
+}
+
+impl IntoZval for i64 {
+	fn into_zval(self, zval: &mut Zval) {
+		(*zval).u1.type_info = 4;
+		(*zval).value.long_value = self;
+	}
+}

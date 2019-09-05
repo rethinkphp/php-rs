@@ -1,7 +1,6 @@
 use libc::*;
 use std::ffi::CString;
 
-#[link_args = "-Wl,-undefined,dynamic_lookup"]
 extern {
     pub fn php_info_print_table_start();
     pub fn php_info_print_table_row(num_cols: c_int, ...) -> c_void;

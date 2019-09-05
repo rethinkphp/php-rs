@@ -1,5 +1,4 @@
 #![allow(unused_variables)]
-#![feature(link_args)]
 
 extern crate libc;
 extern crate php;
@@ -9,7 +8,6 @@ use php::*;
 use zend::*;
 use php::info::*;
 
-#[link_args = "-Wl,-undefined,dynamic_lookup"]
 extern {
     pub fn php_printf(format: *const c_char , ...) -> size_t;
 }
@@ -44,6 +42,8 @@ pub extern fn get_module() -> *mut zend::Module {
     let mut entry = Box::new(zend::Module::new(
         c_str!("demo"),
         c_str!("0.1.0-dev"),
+        20180731,
+        c_str!("API20180731,NTS")
     ));
 
     entry.set_info_func(php_module_info);
