@@ -1,0 +1,18 @@
+#! /usr/bin/env bash
+
+dir=examples/helloworld 
+
+function do_build 
+{
+    cd $dir
+    cargo rustc -- -C link-args='-Wl,-undefined,dynamic_lookup'
+    cd -
+}
+
+function do_test
+{
+    php -d extension=$dir/target/debug/libhelloworld.dylib vendor/bin/phpunit $*
+}
+
+do_build
+do_test $*

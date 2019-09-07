@@ -30,7 +30,7 @@ pub extern fn php_module_info() {
 }
 
 #[no_mangle]
-pub extern fn helloworld(data: &ExecuteData, retval: &mut Zval) {
+pub extern fn say_hello(data: &ExecuteData, retval: &mut Zval) {
     unsafe {
         php_printf(c_str!("Hello world, Rust!"))
     };
@@ -54,8 +54,8 @@ pub extern fn get_module() -> *mut zend::Module {
     ]);
 
     let funcs = Box::new([
-        Function::new(c_str!("helloworld"), helloworld),
-        Function::new_with_args(c_str!("helloworld2"), helloworld, args),
+        Function::new(c_str!("say_hello"), say_hello),
+        Function::new_with_args(c_str!("helloworld2"), say_hello, args),
         Function::end(),
     ]);
 
