@@ -2,7 +2,6 @@
 use std;
 use std::mem;
 use libc::*;
-use std::ffi::CString;
 use super::types::*;
 
 type StartupFunc = extern fn (type_: c_int, module_number: c_int) -> c_int;
@@ -191,50 +190,5 @@ unsafe impl Sync for Module {}
 
 
 extern "C" {
-    fn zend_strpprintf(max_len: libc::size_t, format: *const c_char, ...) -> *mut ZendString;
-}
-
-extern "C" {
 	pub fn zend_parse_parameters(num_args: i32, format: *const c_char, ...) -> i32;
-}
-
-fn zend_string(max_len: libc::size_t, format: &str) -> *mut ZendString {
-    let c_format = CString::new(format).unwrap();
-    unsafe {
-        let strg = zend_strpprintf(max_len, c_format.as_ptr());
-        strg
-    }
-}
-
-impl From<&str> for ZendValue {
-    fn from(rust_str: &str) -> Self {
-        ZendValue {
-            string: zend_string(rust_str.len(), rust_str),
-        }
-    }
-}
-
-pub trait IntoZval {
-    fn into_zval(self, zval: &mut Zval);
-}
-
-impl IntoZval for &str {
-    fn into_zval(self, zval: &mut Zval) {
-        (*zval).u1.type_info = 6;
-        (*zval).value = ZendValue::from(self);
-    }
-}
-
-impl IntoZval for i64 {
-	fn into_zval(self, zval: &mut Zval) {
-		(*zval).u1.type_info = 4;
-		(*zval).value.long_value = self;
-	}
-}
-
-impl IntoZval for u32 {
-	fn into_zval(self, zval: &mut Zval) {
-		(*zval).u1.type_info = 4;
-		(*zval).value.long_value = i64::from(self);
-	}
 }
