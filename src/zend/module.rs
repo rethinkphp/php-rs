@@ -3,6 +3,7 @@ use std;
 use std::mem;
 use libc::*;
 use std::ffi::CString;
+use super::types::*;
 
 type StartupFunc = extern fn (type_: c_int, module_number: c_int) -> c_int;
 type ShutdownFunc = extern fn (type_: c_int, module_number: c_int) -> c_int;
@@ -12,7 +13,34 @@ type GlobalsDtorFunc = extern fn (global: *const c_void) -> c_void;
 type PostDeactivateFunc = extern fn () -> c_int;
 type HandlerFunc = extern fn (execute_data: &ExecuteData, retval: &mut Zval);
 
-pub struct ExecuteData {}
+#[repr(C)]
+pub struct zend_op {
+
+}
+
+#[repr(C)]
+pub struct zend_function {
+
+}
+
+#[repr(C)]
+pub struct ExecuteData {
+    opline: *const zend_op,
+    call: *mut ExecuteData,
+    return_value: *mut Zval,
+    func: *mut zend_function,
+    this: Zval,
+}
+
+impl ExecuteData {
+    pub fn num_args(&self) -> u32
+    {
+        unsafe {
+            self.this.u2.num_args
+        }
+    }
+}
+
 pub struct ModuleDep {}
 
 #[repr(C)]
@@ -201,5 +229,12 @@ impl IntoZval for i64 {
 	fn into_zval(self, zval: &mut Zval) {
 		(*zval).u1.type_info = 4;
 		(*zval).value.long_value = self;
+	}
+}
+
+impl IntoZval for u32 {
+	fn into_zval(self, zval: &mut Zval) {
+		(*zval).u1.type_info = 4;
+		(*zval).value.long_value = i64::from(self);
 	}
 }
