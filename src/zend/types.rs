@@ -72,6 +72,12 @@ impl IntoZval for &str {
         (*zval).value = ZendValue::from(self);
     }
 }
+impl IntoZval for &mut ZendString {
+    fn into_zval(self, zval: &mut Zval) {
+        (*zval).u1.type_info = 6;
+        (*zval).value.string = self
+    }
+}
 
 impl IntoZval for i64 {
 	fn into_zval(self, zval: &mut Zval) {
@@ -81,6 +87,13 @@ impl IntoZval for i64 {
 }
 
 impl IntoZval for u32 {
+    fn into_zval(self, zval: &mut Zval) {
+        (*zval).u1.type_info = 4;
+        (*zval).value.long_value = i64::from(self);
+    }
+}
+
+impl IntoZval for i32 {
     fn into_zval(self, zval: &mut Zval) {
         (*zval).u1.type_info = 4;
         (*zval).value.long_value = i64::from(self);

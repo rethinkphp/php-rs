@@ -32,10 +32,10 @@ pub struct ExecuteData {
 }
 
 impl ExecuteData {
-    pub fn num_args(&self) -> u32
+    pub fn num_args(&self) -> i32
     {
         unsafe {
-            self.this.u2.num_args
+            self.this.u2.num_args as i32
         }
     }
 }

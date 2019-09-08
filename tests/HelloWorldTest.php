@@ -7,7 +7,8 @@ class HelloWorldTest extends TestCase
     public function testSayHello()
     {
         ob_start();
-        say_hello();
+        $result = say_hello("Rust");
         $this->assertEquals('Hello world, Rust!', ob_get_clean());
+        $this->assertEquals('Rust', $result);
     }
 }

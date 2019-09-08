@@ -7,6 +7,7 @@ use libc::*;
 use php::*;
 use zend::*;
 use php::info::*;
+use std::ffi::CString;
 
 extern {
     pub fn php_printf(format: *const c_char , ...) -> size_t;
@@ -32,7 +33,13 @@ pub extern fn php_module_info() {
 #[no_mangle]
 pub extern fn say_hello(data: &ExecuteData, retval: &mut Zval) {
     unsafe {
-        php_printf(c_str!("Hello world, Rust!"))
+        let zs: *mut ZendString = std::ptr::null_mut();
+
+        let c_format = CString::new("S").unwrap();
+        zend_parse_parameters(data.num_args(), c_format.as_ptr(), &zs);
+
+        php_printf(c_str!("Hello world, Rust!"));
+        (*zs).into_zval(retval)
     };
 }
 
