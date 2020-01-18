@@ -35,6 +35,8 @@ pub struct ZendString {
     pub value: *mut libc::c_char,
 }
 
+type ZendStringPtr = *mut ZendString;
+
 #[repr(C)]
 pub struct Zval {
     pub value: ZendValue,
@@ -52,6 +54,10 @@ fn zend_string(max_len: libc::size_t, format: &str) -> *mut ZendString {
         let strg = zend_strpprintf(max_len, c_format.as_ptr());
         strg
     }
+}
+
+pub fn zend_string_ptr_new() -> ZendStringPtr {
+    std::ptr::null_mut()
 }
 
 impl From<&str> for ZendValue {
@@ -73,6 +79,13 @@ impl IntoZval for &str {
     }
 }
 impl IntoZval for &mut ZendString {
+    fn into_zval(self, zval: &mut Zval) {
+        (*zval).u1.type_info = 6;
+        (*zval).value.string = self
+    }
+}
+
+impl IntoZval for ZendStringPtr {
     fn into_zval(self, zval: &mut Zval) {
         (*zval).u1.type_info = 6;
         (*zval).value.string = self
