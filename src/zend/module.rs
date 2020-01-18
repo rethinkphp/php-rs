@@ -1,7 +1,7 @@
-#![feature(c_variadic)]
 use std;
 use std::mem;
 use libc::*;
+use std::ffi::CString;
 use super::types::*;
 
 type StartupFunc = extern fn (type_: c_int, module_number: c_int) -> c_int;
@@ -36,6 +36,16 @@ impl ExecuteData {
     {
         unsafe {
             self.this.u2.num_args as i32
+        }
+    }
+}
+
+#[macro_export]
+macro_rules! zend_parse_parameters {
+    ($num_args:expr, $format:expr, $($arg:expr), +) => {
+        let c_format = CString::new($format).unwrap();
+        unsafe {
+            php::zend::zend_parse_parameters($num_args, c_format.as_ptr(), $($arg), +);
         }
     }
 }
