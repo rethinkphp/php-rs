@@ -3,15 +3,11 @@
 extern crate libc;
 extern crate php;
 
-use libc::*;
+use libc::{c_int,c_char};
 use php::*;
 use zend::*;
 use php::info::*;
 use std::ffi::CString;
-
-extern {
-    pub fn php_printf(format: *const c_char , ...) -> size_t;
-}
 
 #[no_mangle]
 pub extern fn php_module_startup(type_: c_int, module_number: c_int) -> c_int {
@@ -32,15 +28,10 @@ pub extern fn php_module_info() {
 
 #[no_mangle]
 pub extern fn say_hello(data: &ExecuteData, retval: &mut Zval) {
-    unsafe {
-        let zs: *mut ZendString = std::ptr::null_mut();
-
-        let c_format = CString::new("S").unwrap();
-        zend_parse_parameters(data.num_args(), c_format.as_ptr(), &zs);
-
-        php_printf(c_str!("Hello world, Rust!"));
-        (*zs).into_zval(retval)
-    };
+    let zs = zend_string_ptr_new();
+    zend_parse_parameters!(data.num_args(), "S", &zs);
+    printf!("Hello world, Rust!");
+    zs.into_zval(retval)
 }
 
 #[no_mangle]
